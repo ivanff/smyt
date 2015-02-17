@@ -1,0 +1,11 @@
+
+class {{ table_name }}(models.Model):
+{% for item in fields %}
+	{% if item.type == 'char' %}
+		{{ item.id }} = models.CharField('{{ item.title|default:"" }}', max_length=250)
+	{% elif item.type == 'date' %}
+		{{ item.id }} = models.DateField('{{ item.title|default:"" }}')
+	{% elif item.type == 'int' %}
+		{{ item.id }} = models.IntegerField('{{ item.title|default:"" }}')
+	{% endif %}
+{% endfor %}

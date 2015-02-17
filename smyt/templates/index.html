@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block body %}
+	<h1 class="text-center">Dynamic model maker</h1>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<form action="{% url 'index' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+					<div class="form-group{% if form.file.errors %} has-error{% endif %}">
+						<label for="file">Схема:</label>
+						<input id="file" type="file" name="file">
+
+						<p class="help-block">схема базы данных в формате Yaml иди Xml</p>
+						{% if form.file.errors %}
+							<ul class="control-label">
+								{% for error in form.file.errors %}
+									<li><strong>{{ error|escape }}</strong></li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+						{% if error %}
+							<p class="alert-danger">
+								{{ error }}
+							</p>
+						{% endif %}
+					</div>
+					<button type="submit" class="btn btn-default">Отправить</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="container ng-cloak" ng-controller="dynamicModelCtrl"
+			 ng-init="tables=$root.JSON.parse('{{ tables_json|escapejs }}')">
+		<div class="row">
+			<div class="col-md-4">
+				<ul>
+					<li ng-repeat="item in tables">
+						<a ng-click="setTable(item.name)" href="">{$ item.title $}</a>
+					</li>
+				</ul>
+			</div>
+			<div class="col-md-8">
+				<table class="table table-bordered">
+					<thead>
+					<tr>
+						<th ng-repeat="item in table.headers">
+							{$ item.title $}
+						</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr ng-repeat="row in table.rows">
+						<th ng-repeat="item in row.fields" ng-click="edit=(! edit)">
+							<span ng-hide="edit">{$ item.value $}</span>
+							<input ng-show="edit && item.type == 'char'" type="text">
+							<input ng-show="edit && item.type == 'date'" type="date">
+							<input ng-show="edit && item.type == 'int'" type="number">
+						</th>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{{ STATIC_URL }}app/controllers/dynamicModelCtrl.js"></script>
+{% endblock %}
