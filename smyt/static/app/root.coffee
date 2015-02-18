@@ -2,6 +2,8 @@ app = angular.module('smyt', [
   'ngResource'
   'ngCookies'
 
+  'mgcrea.ngStrap'
+
   'app.factories'
   'app.constants'
   'app.controllers'
@@ -22,6 +24,7 @@ app.config(['$httpProvider', '$interpolateProvider', '$locationProvider', ($http
 
 app.run(['$rootScope', ($rootScope) ->
   $rootScope.JSON = JSON
+  $rootScope.table = {}
 ])
 
 angular.module('app.controllers', [])

@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+	<link href="{{ STATIC_URL }}css/bootstrap-additions.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block body %}
 	<h1 class="text-center">Dynamic model maker</h1>
 	<div class="container">
@@ -35,28 +39,60 @@
 		<div class="row">
 			<div class="col-md-4">
 				<ul>
-					<li ng-repeat="item in tables">
-						<a ng-click="setTable(item.name)" href="">{$ item.title $}</a>
+					<li ng-repeat="table in tables">
+						<a ng-click="setTable(table)" href="">{$ table.title $}</a>
 					</li>
 				</ul>
 			</div>
-			<div class="col-md-8">
+			<div class="col-md-8" ng-show="table.title">
+				<h2>{$ table.title $}</h2>
+
+				<form name="tableForm" ng-submit="addRow(tableForm)">
+					<div class="form-group"
+							 ng-repeat="item in table.headers|filter:{name: '!id'}"
+							 ng-class="{'has-error': errors[item.name]}">
+						<label>{$ item.title $}</label>
+						<input ng-if="item.type == 'char'" ng-model="instance[item.name]" name="{$ item.name $}"
+									 type="text" class="form-control" ng-required="true">
+						<input ng-if="item.type == 'int'" ng-model="instance[item.name]" name="{$ item.name $}"
+									 type="text" class="form-control" ng-required="true">
+						<input ng-if="item.type == 'date'" ng-model="instance[item.name]" name="{$ item.name $}"
+									 bs-datepicker data-date-format="yyyy-MM-dd" data-date-type="string"
+									 type="text" class="form-control" ng-required="true">
+						<p ng-show="errors[item.name]" class="help-block">{$ errors[item.name].join(';') $}</p>
+					</div>
+					<button type="submit" class="btn btn-default">Отправить</button>
+				</form>
+				<hr>
 				<table class="table table-bordered">
 					<thead>
 					<tr>
+						<th></th>
 						<th ng-repeat="item in table.headers">
 							{$ item.title $}
 						</th>
 					</tr>
 					</thead>
 					<tbody>
-					<tr ng-repeat="row in table.rows">
-						<th ng-repeat="item in row.fields" ng-click="edit=(! edit)">
-							<span ng-hide="edit">{$ item.value $}</span>
-							<input ng-show="edit && item.type == 'char'" type="text">
-							<input ng-show="edit && item.type == 'date'" type="date">
-							<input ng-show="edit && item.type == 'int'" type="number">
-						</th>
+					<tr ng-repeat="row in table.rows track by $index" ng-controller="rowCtrl">
+						<form name="rowForm">
+							<th class="text-center">
+								<a ng-show="!edit" ng-click="edit=true" href="" class="glyphicon glyphicon-edit"></a>
+								<a ng-click="row[0].instance.$remove({table_name: table.name, pk: row[0].instance.id});table.rows.splice($index, 1)" href="" class="glyphicon glyphicon-remove"></a>
+								<a ng-show="edit" ng-click="update(rowForm, row[0].instance)" href="" class="glyphicon glyphicon-save"></a>
+							</th>
+							<th ng-repeat="item in row" class="form-group" ng-class="{'has-error': errors[item.name]}">
+									<span ng-show="! edit || item.name == 'id'">{$ item.instance[item.name] $}</span>
+									<input ng-if="edit && item.type == 'char'" type="text" ng-model="item.instance[item.name]"
+												 name="{$ item.name $}" class="form-control" ng-required="true">
+									<input ng-if="edit && item.type == 'date'" type="text" ng-model="item.instance[item.name]"
+												 bs-datepicker data-date-format="yyyy-MM-dd" data-date-type="string"
+												 name="{$ item.name $}" class="form-control" ng-required="true">
+									<input ng-if="edit && item.type == 'int'" type="text" ng-model="item.instance[item.name]"
+												 name="{$ item.name $}" class="form-control" ng-required="true">
+									<p ng-show="errors[item.name]" class="help-block">{$ errors[item.name].join(';') $}</p>
+							</th>
+						</form>
 					</tr>
 					</tbody>
 				</table>
@@ -66,5 +102,7 @@
 {% endblock %}
 
 {% block extra_js %}
+	<script src="//cdnjs.cloudflare.com/ajax/libs/angular-strap/2.1.2/angular-strap.min.js"></script>
+	<script src="{{ STATIC_URL }}js/angular-strap.tpl.js"></script>
 	<script src="{{ STATIC_URL }}app/controllers/dynamicModelCtrl.js"></script>
 {% endblock %}

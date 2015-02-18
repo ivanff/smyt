@@ -147,7 +147,14 @@ def table_headers(request):
     model = get_model('dynamic_models', name)
     fields = []
     for field in model._meta.fields:
-        fields.append({'name': field.name, 'title': field.verbose_name})
+        type = None
+        if isinstance(field, models.CharField):
+            type = 'char'
+        elif isinstance(field, models.IntegerField):
+            type = 'int'
+        elif isinstance(field, models.DateField):
+            type = 'date'
+        fields.append({'name': field.name, 'title': field.verbose_name, 'type': type})
     return Response(fields)
 
 
@@ -157,7 +164,7 @@ class DynamicModelSet(ModelViewSet):
         return super(DynamicModelSet, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return self.model.objects.all()
+        return self.model.objects.all().order_by('-id')
 
     def get_serializer_class(self):
         class DynamicModelSerializer(ModelSerializer):

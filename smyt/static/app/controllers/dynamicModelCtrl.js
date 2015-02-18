@@ -5,36 +5,172 @@
   controllers = angular.module('app.controllers');
 
   controllers.controller('dynamicModelCtrl', [
-    '$scope', '$resource', function(s, r) {
+    '$scope', '$rootScope', '$resource', function(s, rs, r) {
       var TableMetaRes, TableRes;
+      s.errors = {};
+      s.datepickerOptions = {
+        format: 'dd.mm.yyyy',
+        autoclose: true
+      };
       s.table = {};
+      s.instance = null;
       TableMetaRes = r('/js_api/table/meta', {}, {
         post: {
           method: 'POST',
           isArray: true
         }
       });
-      TableRes = r('/js_api/table/:name', {}, {
+      TableRes = r('/js_api/table/:table_name', {}, {
         query: {
-          url: '/js_api/table/:name/list',
+          url: '/js_api/table/:table_name/list',
           isArray: true
+        },
+        update: {
+          url: '/js_api/table/:table_name/:pk',
+          method: 'PUT'
+        },
+        remove: {
+          url: '/js_api/table/:table_name/:pk',
+          method: 'DELETE'
         }
       });
-      return s.setTable = function(table_name) {
-        var table_res;
-        TableMetaRes.post({
-          name: table_name
+      s.setTable = function(table) {
+        s.errors = {};
+        s.table = rs.table = table;
+        s.instance = new TableRes();
+        return TableMetaRes.post({
+          name: table.name
         }, function(headers) {
-          return s.table.headers = headers;
+          s.table.headers = headers;
+          return s.table.fields = headers.map(function(header) {
+            return header.name;
+          });
+        }).$promise.then(function() {
+          return TableRes.query({
+            table_name: table.name
+          }, function(rows) {
+            var field_name, fields, instance, row, table_rows, type, _i, _j, _len, _len1, _ref;
+            table_rows = [];
+            for (_i = 0, _len = rows.length; _i < _len; _i++) {
+              row = rows[_i];
+              fields = [];
+              instance = new TableRes();
+              _ref = s.table.fields;
+              for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+                field_name = _ref[_j];
+                type = null;
+                s.table.headers.filter(function(value) {
+                  if (value.name === field_name) {
+                    return type = value.type;
+                  }
+                });
+                instance[field_name] = row[field_name];
+                fields.push({
+                  name: field_name,
+                  value: row[field_name],
+                  type: type,
+                  instance: instance
+                });
+              }
+              table_rows.push(fields);
+            }
+            return s.table.rows = table_rows;
+          });
         });
-        table_res = new TableRes({
-          name: table_name
-        });
-        return TableRes.query({
-          name: table_name
-        }, function(rows) {
-          return s.table.rows = rows;
-        });
+      };
+      return s.addRow = function(form) {
+        var key, value, _results;
+        s.errors = {};
+        if (form.$valid) {
+          return s.instance.$save({
+            table_name: s.table.name
+          }, function(row) {
+            var field_name, fields, instance, type, _i, _len, _ref;
+            fields = [];
+            instance = angular.copy(s.instance);
+            s.instance = new TableRes();
+            _ref = s.table.fields;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              field_name = _ref[_i];
+              type = null;
+              s.table.headers.filter(function(value) {
+                if (value.name === field_name) {
+                  return type = value.type;
+                }
+              });
+              fields.push({
+                name: field_name,
+                value: row[field_name],
+                type: type,
+                instance: instance
+              });
+            }
+            return s.table.rows.unshift(fields);
+          }, function(resp) {
+            return angular.extend(s.errors, resp.data);
+          });
+        } else {
+          console.log(form, s.errors);
+          _results = [];
+          for (key in form) {
+            value = form[key];
+            if (key && angular.isObject(value)) {
+              if (key.indexOf('$') !== 0) {
+                if (value.$dirty && value.$invalid) {
+                  _results.push(s.errors[value.$name] = []);
+                } else {
+                  _results.push(void 0);
+                }
+              } else {
+                _results.push(void 0);
+              }
+            } else {
+              _results.push(void 0);
+            }
+          }
+          return _results;
+        }
+      };
+    }
+  ]);
+
+  controllers.controller('rowCtrl', [
+    '$scope', '$rootScope', '$resource', function(s, rs, r) {
+      s.errors = {};
+      s.edit = false;
+      return s.update = function(form, instance) {
+        var key, value, _ref, _results;
+        if (form.$valid) {
+          return instance.$update({
+            table_name: rs.table.name,
+            pk: instance.id
+          }, function() {
+            s.errors = {};
+            return s.edit = false;
+          }, function(resp) {
+            return angular.extend(s.errors, resp.data);
+          });
+        } else {
+          _ref = s.form;
+          _results = [];
+          for (key in _ref) {
+            value = _ref[key];
+            if (key && angular.isObject(value)) {
+              if (key.indexOf('$') !== 0) {
+                if (value.$dirty && value.$invalid) {
+                  _results.push(s.errors[value.$name] = [true]);
+                } else {
+                  _results.push(void 0);
+                }
+              } else {
+                _results.push(void 0);
+              }
+            } else {
+              _results.push(void 0);
+            }
+          }
+          return _results;
+        }
       };
     }
   ]);

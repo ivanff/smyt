@@ -2,7 +2,7 @@
 (function() {
   var app;
 
-  app = angular.module('smyt', ['ngResource', 'ngCookies', 'app.factories', 'app.constants', 'app.controllers', 'app.directives']);
+  app = angular.module('smyt', ['ngResource', 'ngCookies', 'mgcrea.ngStrap', 'app.factories', 'app.constants', 'app.controllers', 'app.directives']);
 
   app.config([
     '$httpProvider', '$interpolateProvider', '$locationProvider', function($httpProvider, $interpolateProvider, $locationProvider) {
@@ -16,7 +16,8 @@
 
   app.run([
     '$rootScope', function($rootScope) {
-      return $rootScope.JSON = JSON;
+      $rootScope.JSON = JSON;
+      return $rootScope.table = {};
     }
   ]);
 
