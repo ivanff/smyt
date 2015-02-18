@@ -1,4 +1,3 @@
-from cStringIO import StringIO
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -10,6 +9,7 @@ from django.shortcuts import render
 from django.contrib import admin
 from django.db import models
 
+from cStringIO import StringIO
 from collections import OrderedDict
 from django.utils.crypto import get_random_string
 from django.utils.importlib import import_module
@@ -23,6 +23,7 @@ import glob
 import re
 import codecs
 import json
+
 
 def format_xml(d):
     result = OrderedDict()
