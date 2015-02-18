@@ -17,7 +17,7 @@
   app.run([
     '$rootScope', function($rootScope) {
       $rootScope.JSON = JSON;
-      return $rootScope.table = {};
+      $rootScope.table = {};
     }
   ]);
 

@@ -70,6 +70,7 @@ controllers.controller('dynamicModelCtrl', ['$scope', '$rootScope', '$resource',
           if key.indexOf('$') != 0
             if value.$dirty and value.$invalid
               s.errors[value.$name] = []
+  return
 ])
 
 controllers.controller('rowCtrl', ['$scope', '$rootScope', '$resource', (s, rs, r) ->
@@ -90,4 +91,5 @@ controllers.controller('rowCtrl', ['$scope', '$rootScope', '$resource', (s, rs, 
           if key.indexOf('$') != 0
             if value.$dirty and value.$invalid
               s.errors[value.$name] = [true]
+  return
 ])

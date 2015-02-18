@@ -25,6 +25,7 @@ app.config(['$httpProvider', '$interpolateProvider', '$locationProvider', ($http
 app.run(['$rootScope', ($rootScope) ->
   $rootScope.JSON = JSON
   $rootScope.table = {}
+  return
 ])
 
 angular.module('app.controllers', [])

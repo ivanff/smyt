@@ -78,7 +78,7 @@
           });
         });
       };
-      return s.addRow = function(form) {
+      s.addRow = function(form) {
         var key, value, _results;
         s.errors = {};
         if (form.$valid) {
@@ -138,7 +138,7 @@
     '$scope', '$rootScope', '$resource', function(s, rs, r) {
       s.errors = {};
       s.edit = false;
-      return s.update = function(form, instance) {
+      s.update = function(form, instance) {
         var key, value, _ref, _results;
         if (form.$valid) {
           return instance.$update({
